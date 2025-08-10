@@ -725,22 +725,26 @@ namespace BIG_DADDY_MOD.Patches
                     // Reset post-processing effects
                     if (chromaticAberration != null)
                     {
-                        chromaticAberration.intensity.Override(0f);
+                        chromaticAberration.intensity.overrideState = true;
+                        chromaticAberration.intensity.value = 0f;
                         chromaticAberration.active = false;
                     }
                     if (filmGrain != null)
                     {
-                        filmGrain.intensity.Override(0f);
+                        filmGrain.intensity.overrideState = true;
+                        filmGrain.intensity.value = 0f;
                         filmGrain.active = false;
                     }
                     if (colorAdjustments != null)
                     {
-                        colorAdjustments.saturation.Override(0f);
+                        colorAdjustments.saturation.overrideState = true;
+                        colorAdjustments.saturation.value = 0f;
                         colorAdjustments.active = false;
                     }
                     if (vignette != null)
                     {
-                        vignette.intensity.Override(0f);
+                        vignette.intensity.overrideState = true;
+                        vignette.intensity.value = 0f;
                         vignette.active = false;
                     }
 
@@ -825,25 +829,29 @@ namespace BIG_DADDY_MOD.Patches
 
                     if (chromaticAberration != null && chromaticIntensity > 0f)
                     {
-                        chromaticAberration.intensity.Override(chromaticIntensity);
+                        chromaticAberration.intensity.overrideState = true;
+                        chromaticAberration.intensity.value = chromaticIntensity;
                         chromaticAberration.active = true;
                     }
 
                     if (filmGrain != null && grainIntensity > 0f)
                     {
-                        filmGrain.intensity.Override(grainIntensity);
+                        filmGrain.intensity.overrideState = true;
+                        filmGrain.intensity.value = grainIntensity;
                         filmGrain.active = true;
                     }
 
                     if (colorAdjustments != null && saturationValue < 0f)
                     {
-                        colorAdjustments.saturation.Override(saturationValue);
+                        colorAdjustments.saturation.overrideState = true;
+                        colorAdjustments.saturation.value = saturationValue;
                         colorAdjustments.active = true;
                     }
 
                     if (vignette != null && vignetteIntensity > 0f)
                     {
-                        vignette.intensity.Override(vignetteIntensity);
+                        vignette.intensity.overrideState = true;
+                        vignette.intensity.value = vignetteIntensity;
                         vignette.active = true;
                     }
                 }
@@ -950,9 +958,11 @@ namespace BIG_DADDY_MOD.Patches
                 if (chromaticAberration != null)
                 {
                     float originalIntensity = chromaticAberration.intensity.value;
-                    chromaticAberration.intensity.Override(1f);
+                    chromaticAberration.intensity.overrideState = true;
+                    chromaticAberration.intensity.value = 1f;
                     yield return new WaitForSeconds(0.5f);
-                    chromaticAberration.intensity.Override(originalIntensity);
+                    chromaticAberration.intensity.overrideState = true;
+                    chromaticAberration.intensity.value = originalIntensity;
                 }
 
                 yield return new WaitForSeconds(1.5f);
