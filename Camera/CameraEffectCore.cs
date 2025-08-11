@@ -1,3 +1,4 @@
+using CameraLibrary.Patches;
 using GameNetcodeStuff;
 using HarmonyLib;
 using System;
@@ -6,14 +7,14 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 
-namespace BIG_DADDY_MOD.Patches
+namespace CameraLibrary.Patches
 {
     [HarmonyPatch]
     public class CameraEffectSystem
     {
         public static CameraEffectController? localPlayerEffects;
-        private static bool effectApplied = false;
-        
+        private static bool effectApplied;
+
         public class CameraEffectController
         {
             private Volume? postProcessVolume;
@@ -31,35 +32,38 @@ namespace BIG_DADDY_MOD.Patches
             private float animationTime = 0f;
             private Vector3 originalCameraPosition;
             private Vector3 originalCameraRotation;
-            private float originalFOV;
+            private readonly float originalFOV;
             private readonly Dictionary<string, CameraEffect> registeredEffects;
             private CameraEffect? currentEffect;
             private readonly PlayerControllerB player;
-
             public CameraEffectController(PlayerControllerB controller)
             {
                 player = controller;
                 registeredEffects = new Dictionary<string, CameraEffect>();
-                if (player.gameplayCamera != null) {
+                if (player.gameplayCamera != null)
+                {
                     originalCameraPosition = player.gameplayCamera.transform.localPosition;
                     originalCameraRotation = player.gameplayCamera.transform.localEulerAngles;
                     originalFOV = player.gameplayCamera.fieldOfView;
                 }
-                
+
                 InitializePostProcessingEffects();
                 Debug.Log("Camera Effect System initialized");
             }
 
-            private void InitializePostProcessingEffects() {
+            private void InitializePostProcessingEffects()
+            {
                 postProcessVolume = null;
                 if (HUDManager.Instance?.playerGraphicsVolume != null) postProcessVolume = HUDManager.Instance.playerGraphicsVolume;
                 if (postProcessVolume == null) postProcessVolume = GameObject.FindObjectOfType<Volume>();
-                if (postProcessVolume == null && player.gameplayCamera != null) {
+                if (postProcessVolume == null && player.gameplayCamera != null)
+                {
                     var volumes = player.gameplayCamera.GetComponentsInChildren<Volume>();
                     if (volumes.Length > 0) postProcessVolume = volumes[0];
                 }
 
-                if (postProcessVolume?.profile != null) {
+                if (postProcessVolume?.profile != null)
+                {
                     // Initialize all post-processing effects
                     chromaticAberration = GetOrAddEffect<ChromaticAberration>();
                     filmGrain = GetOrAddEffect<FilmGrain>();
@@ -77,18 +81,22 @@ namespace BIG_DADDY_MOD.Patches
                 }
             }
 
-            private T GetOrAddEffect<T>() where T : VolumeComponent {
+            private T GetOrAddEffect<T>() where T : VolumeComponent
+            {
                 if (!postProcessVolume.profile.TryGet(out T effect)) effect = postProcessVolume.profile.Add<T>();
                 effect.active = true;
                 return effect;
             }
 
-            public void RegisterEffect(string name, CameraEffect effect) {
+            public void RegisterEffect(string name, CameraEffect effect)
+            {
                 registeredEffects[name] = effect;
             }
 
-            public void ApplyEffect(string effectName) {
-                if (registeredEffects.TryGetValue(effectName, out CameraEffect effect)) {
+            public void ApplyEffect(string effectName)
+            {
+                if (registeredEffects.TryGetValue(effectName, out CameraEffect effect))
+                {
                     ResetAllEffects();
                     currentEffect = effect;
                     effect.Apply(this);
@@ -96,56 +104,55 @@ namespace BIG_DADDY_MOD.Patches
                 }
             }
 
-            public void Update() {
+            public void Update()
+            {
                 animationTime += Time.deltaTime;
                 currentEffect?.Update(this, animationTime);
             }
 
-            public void ResetAllEffects() {
-                chromaticAberration?.intensity.Override(0f);
-                chromaticAberration?.active.Override(false);
-                filmGrain?.intensity.Override(0f);
-                filmGrain?.active.Override(false);
-                colorAdjustments?.saturation.Override(0f);
-                colorAdjustments?.contrast.Override(0f);
-                colorAdjustments?.postExposure.Override(0f);
-                colorAdjustments?.active.Override(false);
-                vignette?.intensity.Override(0f);
-                vignette?.active.Override(false);
-                lensDistortion?.intensity.Override(0f);
-                lensDistortion?.active.Override(false);
-                bloom?.intensity.Override(0f);
-                bloom?.threshold.Override(1f);
-                bloom?.active.Override(false);
-                depthOfField?.focusDistance.Override(10f);
-                depthOfField?.active.Override(false);
-                motionBlur?.intensity.Override(0f);
-                motionBlur?.active.Override(false);
-                whiteBalance?.temperature.Override(0f);
-                whiteBalance?.tint.Override(0f);
-                whiteBalance?.active.Override(false);
-                channelMixer?.redOutRedIn.Override(100f);
-                channelMixer?.redOutGreenIn.Override(0f);
-                channelMixer?.redOutBlueIn.Override(0f);
-                channelMixer?.greenOutRedIn.Override(0f);
-                channelMixer?.greenOutGreenIn.Override(100f);
-                channelMixer?.greenOutBlueIn.Override(0f);
-                channelMixer?.blueOutRedIn.Override(0f);
-                channelMixer?.blueOutGreenIn.Override(0f);
-                channelMixer?.blueOutBlueIn.Override(100f);
-                channelMixer?.active.Override(false);
-                splitToning?.highlights.Override(Color.white);
-                splitToning?.shadows.Override(Color.white);
-                splitToning?.balance.Override(0f);
-                splitToning?.active.Override(false);
-                if (player.gameplayCamera != null) {
-                    player.gameplayCamera.transform.localPosition = originalCameraPosition;
-                    player.gameplayCamera.transform.localEulerAngles = originalCameraRotation;
-                    player.gameplayCamera.fieldOfView = originalFOV;
-                }
-
-                currentEffect = null;
+            private void ResetAllEffects()
+            {
+                chromaticAberration.intensity.Override(0f);
+                chromaticAberration.active = false;
+                filmGrain.intensity.Override(0f);
+                filmGrain.active = false;
+                colorAdjustments.saturation.Override(0f);
+                colorAdjustments.contrast.Override(0f);
+                colorAdjustments.postExposure.Override(0f);
+                colorAdjustments.active = false;
+                vignette.intensity.Override(0f);
+                vignette.active = false;
+                lensDistortion.intensity.Override(0f);
+                lensDistortion.active = false;
+                bloom.intensity.Override(0f);
+                bloom.threshold.Override(1f);
+                bloom.active = false;
+                depthOfField.focusDistance.Override(10f);
+                depthOfField.active = false;
+                motionBlur.intensity.Override(0f);
+                motionBlur.active = false;
+                whiteBalance.temperature.Override(0f);
+                whiteBalance.tint.Override(0f);
+                whiteBalance.active = false;
+                channelMixer.redOutRedIn.Override(100f);
+                channelMixer.redOutGreenIn.Override(0f);
+                channelMixer.redOutBlueIn.Override(0f);
+                channelMixer.greenOutRedIn.Override(0f);
+                channelMixer.greenOutGreenIn.Override(100f);
+                channelMixer.greenOutBlueIn.Override(0f);
+                channelMixer.blueOutRedIn.Override(0f);
+                channelMixer.blueOutGreenIn.Override(0f);
+                channelMixer.blueOutBlueIn.Override(100f);
+                channelMixer.active = false;
+                splitToning.highlights.Override(Color.white);
+                splitToning.shadows.Override(Color.white);
+                splitToning.balance.Override(0f);
+                splitToning.active = false;
+                player.gameplayCamera.transform.localPosition = originalCameraPosition;
+                player.gameplayCamera.transform.localEulerAngles = originalCameraRotation;
+                player.gameplayCamera.fieldOfView = originalFOV;
             }
+
 
             public void Reset()
             {
@@ -154,7 +161,7 @@ namespace BIG_DADDY_MOD.Patches
                 animationTime = 0f;
                 Debug.Log("All camera effects reset");
             }
-          
+
             public ChromaticAberration? ChromaticAberration => chromaticAberration;
             public FilmGrain? FilmGrain => filmGrain;
             public ColorAdjustments? ColorAdjustments => colorAdjustments;
@@ -172,11 +179,12 @@ namespace BIG_DADDY_MOD.Patches
             public float OriginalFOV => originalFOV;
         }
 
-      
+
         //Harmony Patches
         [HarmonyPatch(typeof(PlayerControllerB), "LateUpdate")]
         [HarmonyPostfix]
-        private static void LateUpdatePatch(PlayerControllerB __instance) {
+        private static void LateUpdatePatch(PlayerControllerB __instance)
+        {
             if (__instance != GameNetworkManager.Instance.localPlayerController || !__instance.isPlayerControlled || __instance.isPlayerDead) return;
             localPlayerEffects ??= new CameraEffectController(__instance);
             localPlayerEffects.Update();
@@ -184,19 +192,31 @@ namespace BIG_DADDY_MOD.Patches
 
         [HarmonyPatch(typeof(MenuManager), "Start")]
         [HarmonyPostfix]
-        private static void OnReturnToLobby() {
-              if (localPlayerEffects != null) localPlayerEffects.Reset();
-              effectApplied = false;
+        private static void OnReturnToLobby()
+        {
+            if (localPlayerEffects != null) localPlayerEffects.Reset();
+            effectApplied = false;
         }
 
         [HarmonyPatch(typeof(StartOfRound), "OnDestroy")]
         [HarmonyPostfix]
-        private static void Cleanup() {
-            if (localPlayerEffects != null) {
+        private static void Cleanup()
+        {
+            if (localPlayerEffects != null)
+            {
                 localPlayerEffects.Reset();
                 localPlayerEffects = null;
             }
             effectApplied = false;
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), "Start")]
+        [HarmonyPostfix]
+        private static void InitializeCustomEffects()
+        {
+            CameraEffectPresets.RegisterDefaultEffects();
+            var controller = CameraEffectSystem.localPlayerEffects;
+            controller?.ApplyEffect("FilmGrain");
         }
     }
 }
