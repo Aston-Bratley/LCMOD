@@ -20,16 +20,11 @@ namespace BIG_DADDY_MOD.Patches {
             }
         }
     }
-
-    // Example static effect
-    public class FilmGrainEffect : CameraEffect
-    {
+    
+    public class FilmGrainEffect : CameraEffect {
         public override string Name => "Film Grain";
-
-        public override void Apply(CameraEffectSystem.CameraEffectController controller)
-        {
-            if (controller.FilmGrain != null)
-            {
+        public override void Apply(CameraEffectSystem.CameraEffectController controller) {
+            if (controller.FilmGrain != null) {
                 controller.FilmGrain.intensity.Override(0.6f);
                 controller.FilmGrain.response.Override(0.8f);
                 controller.FilmGrain.active.Override(true);
@@ -37,26 +32,18 @@ namespace BIG_DADDY_MOD.Patches {
         }
     }
 
-    // Example animated effect
-    public class WavyCameraEffect : CameraEffect
-    {
+    public class WavyCameraEffect : CameraEffect {
         public override string Name => "Wavy Camera";
         public override bool IsAnimated => true;
-
-        public override void Apply(CameraEffectSystem.CameraEffectController controller)
-        {
+        public override void Apply(CameraEffectSystem.CameraEffectController controller) {
             // Initial setup if needed
         }
 
-        public override void Update(CameraEffectSystem.CameraEffectController controller, float animationTime)
-        {
-            if (controller.Player.gameplayCamera != null)
-            {
+        public override void Update(CameraEffectSystem.CameraEffectController controller, float animationTime) {
+            if (controller.Player.gameplayCamera != null) {
                 float waveX = Mathf.Sin(animationTime * 2f) * 0.02f;
                 float waveY = Mathf.Cos(animationTime * 1.5f) * 0.015f;
-                
-                controller.Player.gameplayCamera.transform.localPosition = 
-                    controller.OriginalCameraPosition + new Vector3(waveX, waveY, 0f);
+                controller.Player.gameplayCamera.transform.localPosition = controller.OriginalCameraPosition + new Vector3(waveX, waveY, 0f);
             }
         }
     }
